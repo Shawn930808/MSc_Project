@@ -45,7 +45,7 @@ def main():
         train_list = json.load(outfile)
     with open(args.val_json, 'r') as outfile:
         val_list = json.load(outfile)
-
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     torch.cuda.manual_seed(args.seed)
 
     model = CANNet()
@@ -138,8 +138,8 @@ def validate(val_list, model, criterion):
 
     for i,(img, target) in enumerate(val_loader):
         h,w = img.shape[2:4]
-        h_d = h/2
-        w_d = w/2
+        h_d =h//2
+        w_d =w//2
         img_1 = Variable(img[:,:,:h_d,:w_d].cuda())
         img_2 = Variable(img[:,:,:h_d,w_d:].cuda())
         img_3 = Variable(img[:,:,h_d:,:w_d].cuda())

@@ -12,6 +12,8 @@ from torch.autograd import Variable
 from sklearn.metrics import mean_squared_error,mean_absolute_error
 
 from torchvision import transforms
+from matplotlib import pyplot as plt
+from matplotlib import cm as CM
 
 
 transform=transforms.Compose([
@@ -20,7 +22,7 @@ transform=transforms.Compose([
                    ])
 
 # the folder contains all the test images
-img_folder='../data/part_B_final/test_data/images'
+img_folder='./dataset/test_data/images'
 img_paths=[]
 
 for img_path in glob.glob(os.path.join(img_folder, '*.jpg')):
@@ -30,7 +32,7 @@ model = CANNet()
 
 model = model.cuda()
 
-checkpoint = torch.load('part_B_pre.pth.tar')
+checkpoint = torch.load('model_best.pth.tar')
 
 model.load_state_dict(checkpoint['state_dict'])
 
@@ -39,12 +41,12 @@ model.eval()
 pred= []
 gt = []
 
-for i in xrange(len(img_paths)):
+for i in range(len(img_paths)):
     img = transform(Image.open(img_paths[i]).convert('RGB')).cuda()
     img = img.unsqueeze(0)
     h,w = img.shape[2:4]
-    h_d = h/2
-    w_d = w/2
+    h_d = h//2
+    w_d = w//2
     img_1 = Variable(img[:,:,:h_d,:w_d].cuda())
     img_2 = Variable(img[:,:,:h_d,w_d:].cuda())
     img_3 = Variable(img[:,:,h_d:,:w_d].cuda())
@@ -56,13 +58,23 @@ for i in xrange(len(img_paths)):
 
     pure_name = os.path.splitext(os.path.basename(img_paths[i]))[0]
     gt_file = h5py.File(img_paths[i].replace('.jpg','.h5').replace('images','ground_truth'),'r')
+    #print(gt_file['density'])
     groundtruth = np.asarray(gt_file['density'])
+    plt.figure(2)
+
+    plt.imshow(groundtruth, cmap=CM.jet)
+    plt.show()
+
     pred_sum = density_1.sum()+density_2.sum()+density_3.sum()+density_4.sum()
+    print("pred_sum",pred_sum)
+    print("groundtruth",np.sum(groundtruth))
     pred.append(pred_sum)
     gt.append(np.sum(groundtruth))
+    print("gt",gt)
+    print("pred",pred)
 
 mae = mean_absolute_error(pred,gt)
 rmse = np.sqrt(mean_squared_error(pred,gt))
 
-print 'MAE: ',mae
-print 'RMSE: ',rmse
+print ('MAE: ',mae)
+print ('RMSE: ',rmse)

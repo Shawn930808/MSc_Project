@@ -5,10 +5,10 @@ import glob
 
 if __name__ == '__main__':
     # path to folder that contains images
-    img_folder = ''
+    img_folder = './dataset/test_data/images'
 
     # path to the final json file
-    output_json = '.../img.json'
+    output_json = './val.json'
 
     img_list = []
 
